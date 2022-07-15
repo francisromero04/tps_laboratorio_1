@@ -10,21 +10,23 @@ int main(void)
 	int opcionMenu;
 	int opcionInforme;
 	int flagAlta = 0;
+	int flagAltaForzada = 0;
 	sPassengers arrayPasajeros[MAX_TAM];
 	sPass_initPassenger(arrayPasajeros, MAX_TAM);
 
 	do
 	{
-		puts("\n\t\t\t\t MENU DE OPCIONES");
+		puts("\n\n\t\t\t\t MENU DE OPCIONES");
 		puts("\t\t\t\t ---------------- \n");
-		puts("1. ALTA DE UN PASAJERO \n");
-		puts("2. MODIFICAR UN PASAJERO \n");
-		puts("3. BAJA DE UN PASAJERO \n");
+		puts("1. ALTA DE UN PASAJERO.");
+		puts("2. MODIFICAR UN PASAJERO.");
+		puts("3. BAJA DE UN PASAJERO.");
 		puts("4. INFORMAR: \n"
 			 "    1. LISTADO DE PASAJEROS ORDENADOS ALFABETICAMENTE POR APELLIDO Y TIPO \n"
-			 "    2. TOTAL Y PROMEDIO DE PRECIO DE LOS PASAJES, Y CANTIDAD DE PASAJEROS QUE SUPERAN EL PRECIO PROMEDIO \n"
-			 "    3. LISTADO DE PASAJEROS POR C�DIGO DE VUELO Y ESTADOS DE VUELO ACTIVO \n");
-		puts("5. SALIR \n");
+			 "    2. EL TOTAL DE LOS PASAJES CON SU PROMEDIO Y PASAJEROS QUE LO SUPERAN \n"
+			 "    3. LISTADO DE PASAJEROS POR CODIGO DE VUELO Y ESTADOS DE VUELO ACTIVO");
+		puts("5. CARGA FORZADA DE PASAJEROS.");
+		puts("6. SALIR DEL PROGRAMA. \n");
 
 		utn_getNumero("INGRESE OPCION: ", "ERROR. ", 1, 5, 1, &opcionMenu);
 
@@ -43,8 +45,11 @@ int main(void)
 			break;
 
 			case 2:
-				if(flagAlta == 1)
+				if(flagAlta == 1 || flagAltaForzada == 1)
 				{
+					puts("\n+-------------------------------------------------------------------+");
+					puts("| ID |    APELLIDO   |     NOMBRE     |   PRECIO   |      TIPO      |");
+					puts("+-------------------------------------------------------------------+");
 					sPass_modifyData(arrayPasajeros, MAX_TAM);
 				}
 				else
@@ -54,9 +59,12 @@ int main(void)
 			break;
 
 			case 3:
-				if(flagAlta == 1)
+				if(flagAlta == 1 || flagAltaForzada == 1)
 				{
-				 sPass_removePassengers(arrayPasajeros, MAX_TAM);
+					puts("\n+-------------------------------------------------------------------+");
+					puts("| ID |    APELLIDO   |     NOMBRE     |   PRECIO   |      TIPO      |");
+					puts("+-------------------------------------------------------------------+");
+					sPass_removePassengers(arrayPasajeros, MAX_TAM);
 				}
 				else
 				{
@@ -65,13 +73,17 @@ int main(void)
 				break;
 
 			case 4:
-				if(flagAlta == 1)
+				if(flagAlta == 1 || flagAltaForzada == 1)
 				{
-					utn_getNumero("\nINGRESE OPCION PARA INFORMAR: ", "\nERROR. ", 1, 3, 2, &opcionInforme);
+					utn_getNumero("INGRESE OPCION PARA INFORMAR: ", "ERROR. ", 1, 3, 2, &opcionInforme);
 					switch(opcionInforme)
 					{
 						case 1:
+							puts("\n+-------------------------------------------------------------------+");
+							puts("| ID |    APELLIDO   |     NOMBRE     |   PRECIO   |      TIPO      |");
+							puts("+-------------------------------------------------------------------+");
 							sPass_printPassengers(arrayPasajeros, MAX_TAM, 1);
+							puts("+-------------------------------------------------------------------+");
 						break;
 
 						case 2:
@@ -79,7 +91,11 @@ int main(void)
 						break;
 
 						case 3:
+							puts("\n+------------------------------------------------------------------------------------+");
+							puts("| ID |    APELLIDO   |     NOMBRE     |   PRECIO   |  CODIGO VUELO  |     ESTADO     |");
+							puts("+------------------------------------------------------------------------------------+");
 							sPass_printPassengers(arrayPasajeros, MAX_TAM, 2);
+							puts("+------------------------------------------------------------------------------------+");
 						break;
 					}
 				}
@@ -90,12 +106,20 @@ int main(void)
 			break;
 
 			case 5:
+				if(sPass_CargaForzada(arrayPasajeros) == 1)
+				{
+					flagAltaForzada = 1;
+					puts("\nCARGA FORZADA CON EXITO! YA PUEDE OPERAR CON DICHOS PASAJEROS.");
+				}
+			break;
+
+			case 6:
 				puts("\nSALIENDO DEL PROGRAMA...");
 			break;
 
 		}//FIN SWITCH
 
-	}while(opcionMenu != 5);
+	}while(opcionMenu != 6);
 
 	return EXIT_SUCCESS;
 

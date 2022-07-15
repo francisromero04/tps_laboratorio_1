@@ -1,11 +1,19 @@
 #include "abm.h"
 
-//-----------------------------------------------------UTILES EN ABM---------------------------------------------------
+//-----------------------------------------------------STATICS HEADERS---------------------------------------------------
+
+static int sPass__getID(void);
+static int sPass_getFreeIndex(sPassengers array[], int TAM);
+static int sPass_findPassengerByID(sPassengers array[], int TAM, int ID);
+static sPassengers sPass_enterData(void);
+static sPassengers sPass_modifyOne(sPassengers Pasajero);
+static void sPass_printOne(sPassengers Pasajero, int criterio);
+
+//-----------------------------------------------------STATICS SOURCES---------------------------------------------------
 
 /// @fn int sPass__getID(void)
 /// @brief Con la variable passenger_idIncremental incrementa un ID desde 1000 en adelante
 /// @return Retorna el ID que incremento
-static int sPass__getID(void);
 static int sPass__getID(void)
 {
 	///INICIALIZADO UNA UNICA VEZ AL COMIENZO DEL PROGRAMA CON ALCANCE UNICAMENTE EN FUNCION sPass_getID();
@@ -17,33 +25,13 @@ static int sPass__getID(void)
 	return rtn;
 }
 
-/// @fn void sPass_initPassenger(sPassengers[], int)
-/// @brief Recibe el array cuyo tipo de dato es sPassengers y su tamaño, para asi darle un indice LIBRE
-/// @param array
-/// @param TAM
-void sPass_initPassenger(sPassengers array[], int TAM)
-{
-	int i;
-
-	///SI EXISTE EL ARRAY Y EL LIMITE ES VALIDO
-	if (array != NULL && TAM > 0)
-	{
-		///RECORRE EL ARRAY
-		for (i = 0; i < TAM; i++)
-		{
-			///SETEA ESTADO DE "LIBRE"
-			array[i].isEmpty = LIBRE;
-		}
-	}
-}
-
 /// @fn int sPass_getFreeIndex(sPassengers[], int)
 /// @brief Recibe el array cuyo tipo de dato es sPassengers y su tama�o, luego busca un espacio LIBRE en el indice,
 ///  para despu�s guardar datos en ese espacio
 /// @param array
 /// @param TAM
 /// @return Retorna el espacio LIBRE que encontro en el indice
-int sPass_getFreeIndex(sPassengers array[], int TAM)
+static int sPass_getFreeIndex(sPassengers array[], int TAM)
 {
 	int rtn = -1;
 	int i;
@@ -73,7 +61,7 @@ int sPass_getFreeIndex(sPassengers array[], int TAM)
 /// @param TAM
 /// @param ID
 /// @return Retorna el indice en dondese ubica el ID encontrado
-int sPass_findPassengerByID(sPassengers array[], int TAM, int ID)
+static int sPass_findPassengerByID(sPassengers array[], int TAM, int ID)
 {
 	int rtn = -1;
 	int i;
@@ -102,19 +90,20 @@ int sPass_findPassengerByID(sPassengers array[], int TAM, int ID)
 /// @brief Pide los datos a cargar en un auxiliar cuyo tipo de dato es sPassengers,
 /// para luego poder darde ALTA un pasajero en sPass_addPassengers
 /// @return Retorna ese auxiliar con los datos cargados
-sPassengers sPass_enterData(void)
+static sPassengers sPass_enterData(void)
 {
 	sPassengers auxiliar;
 	int opcionTipoPasajero;
 	int opcionEstadoVuelo;
 
-	utn_getString("\nINGRESE NOMBRE: ", "ERROR \n", 2, TAM_CHAR, auxiliar.name);
-	utn_getString("INGRESE APELLIDO: ", "ERROR \n", 2, TAM_CHAR, auxiliar.lastname);
+	printf("\n");
+	utn_getString("INGRESE NOMBRE: ", "ERROR. ", 2, TAM_CHAR, auxiliar.name);
+	utn_getString("INGRESE APELLIDO: ", "ERROR. ", 2, TAM_CHAR, auxiliar.lastname);
 	utn_getAlfaNum("INGRESE EL CODIGO DE VUELO ALFANUMERICO (no mas de 10 caracteres): ",
-			"ERROR, REINGRESE CODIGO ALFANUMERICO: ", 2, 11, auxiliar.flycode);
+			"ERROR. ", 2, 11, auxiliar.flycode);
 
 	utn_getNumero("INGRESE TIPO DE PASAJERO (TIPO 1: TURISTA | TIPO 2: EJECUTIVO | TIPO 3: PREMIUM): ",
-				"ERROR \n", 1, 3, 2, &opcionTipoPasajero);
+				"ERROR. ", 1, 3, 2, &opcionTipoPasajero);
 	switch(opcionTipoPasajero)
 	{
 		case 1:
@@ -131,7 +120,7 @@ sPassengers sPass_enterData(void)
 	}
 
 	utn_getNumero("INGRESE ESTADO DE VUELO (OPCION 1: ACTIVO | OPCION 2: CANCELADO): ",
-			"ERROR \n", 0, 2, 2, &opcionEstadoVuelo);
+			"ERROR. ", 0, 2, 2, &opcionEstadoVuelo);
 	switch(opcionEstadoVuelo)
 	{
 		case 1:
@@ -143,46 +132,9 @@ sPassengers sPass_enterData(void)
 		break;
 	}
 
-	utn_getNumFloat("INGRESE PRECIO: ", "ERROR \n", 0, 999999, 2, &auxiliar.price);
+	utn_getNumFloat("INGRESE PRECIO: ", "ERROR. ", 0, 999999, 2, &auxiliar.price);
 
 	return auxiliar;
-}
-
-/// @fn void sPass_printAverage(sPassengers[], int)
-/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tama�o,
-///  su funcionalidad es unicamente mostrar el precio total acumulado
-/// entre todos los vuelos, calcula su promedio y cuenta cuantos
-///  pasajeros superan ese promedio
-/// @param array
-/// @param TAM
-void sPass_printAverage(sPassengers array[], int TAM)
-{
-	int i = 0;
-	float promedioPrecio;
-	int contadorPasajeros = 0;
-	float acumuladorPrecio = 0;
-	int contadorPasajerosMayorPrecio = 0;
-
-	if(array != NULL && TAM > 0) ///PREGUNTA SI EL ARRAY EL TAM FUERON PASADOS CORRECTAMENTE
-	{
-		for(i = 0; i < TAM; i++) ///RECORRO EL ARRAY
-		{
-			if(array[i].isEmpty == OCUPADO) ///PREGUNTA SI EL ARRAY EN LA POSICION I ESTA OCUPADO
-			{
-				acumuladorPrecio += array[i].price;
-				contadorPasajeros++;
-				promedioPrecio = acumuladorPrecio/contadorPasajeros;
-
-				if(array[i].price > promedioPrecio)
-				{
-					contadorPasajerosMayorPrecio++;
-				}
-			}
-		}
-		printf("\nPRECIO TOTAL RECAUDADO: %.2f",acumuladorPrecio);
-		printf("\nPROMEDIO PRECIO: %.2f",promedioPrecio);
-		printf("\nCANTIDAD DE PASAJEROS SUPERANDO EL PROMEDIO: %d",contadorPasajerosMayorPrecio);
-	}
 }
 
 /// @fn sPassengers sPass_modifyOne(sPassengers)
@@ -191,105 +143,102 @@ void sPass_printAverage(sPassengers array[], int TAM)
 /// auxiliar para luego igualarlo al tipo de dato que recibi�
 /// @param Pasajero
 /// @return Retorna
-sPassengers sPass_modifyOne(sPassengers Pasajero)
+static sPassengers sPass_modifyOne(sPassengers Pasajero)
 {
-	sPassengers auxiliar;
 	int opcionMenuModificar;
 	int opcionEstadoVuelo;
 	int opcionTipoPasajero;
 
 	do
 	{
-		puts("\nCAMPOS A MODIFICAR: \n");
+		puts("\nCAMPOS A MODIFICAR:");
 		puts("1. NOMBRE");
 		puts("2. APELLIDO");
 		puts("3. CODIGO DE VUELO");
 		puts("4. TIPO DE PASAJERO");
 		puts("5. ESTADO DE VUELO");
 		puts("6. PRECIO");
-		puts("7. SALIR");
+		puts("7. GUARDAR CAMBIOS");
 
-		utn_getNumero("\nINGRESE LA OPCION DEL CAMPO A MODIFICAR: ", "ERROR. \n", 1, 7, 1, &opcionMenuModificar);
+		utn_getNumero("\nINGRESE LA OPCION DEL CAMPO A MODIFICAR: ", "ERROR. ", 1, 7, 1, &opcionMenuModificar);
 
 		switch(opcionMenuModificar)
 		{
 			case 1:
-				if(utn_getString("\nINGRESE EL NUEVO NOMBRE: ", "ERROR \n", 2, TAM_CHAR, auxiliar.name) == 0)
+				if(utn_getString("INGRESE EL NUEVO NOMBRE: ", "ERROR. ", 2, TAM_CHAR, Pasajero.name) == 0)
 				{
-					puts("\nEL NOMBRE SE HA MODIFICADO.");
+					puts("EL NOMBRE SE HA MODIFICADO.");
 				}
 			break;
 
 			case 2:
-				if(utn_getString("\nINGRESE EL NUEVO APELLIDO: ", "ERROR \n", 2, TAM_CHAR, auxiliar.lastname) == 0)
+				if(utn_getString("INGRESE EL NUEVO APELLIDO: ", "ERROR. ", 2, TAM_CHAR, Pasajero.lastname) == 0)
 				{
-					puts("\nEL APELLIDO SE HA MODIFICADO.");
+					puts("EL APELLIDO SE HA MODIFICADO.");
 				}
 			break;
 
 			case 3:
 				if(utn_getAlfaNum("INGRESE EL NUEVO CODIGO DE VUELO ALFANUMERICO (no mas de 10 caracteres): ",
-						"\nERROR, REINGRESE CODIGO ALFANUMERICO: ", 2, 11, auxiliar.flycode) == 0)
+						"ERROR. ", 2, 11, Pasajero.flycode) == 0)
 				{
-					puts("\nEL CODIGO DE VUELO SE HA MODIFICADO.");
+					puts("EL CODIGO DE VUELO SE HA MODIFICADO.");
 				}
 			break;
 
 			case 4:
 				utn_getNumero("INGRESE NUEVO TIPO DE PASAJERO (TIPO 1: TURISTA | TIPO 2: EJECUTIVO | TIPO 3: PREMIUM): ",
-								"ERROR \n", 1, 3, 2, &opcionTipoPasajero);
+								"ERROR. ", 1, 3, 2, &opcionTipoPasajero);
 				switch(opcionTipoPasajero)
 				{
 					case 1:
-						auxiliar.typePassenger = TURISTA;
-						puts("\nEL TIPO DE PASAJERO SE HA MODIFICADO.");
+						Pasajero.typePassenger = TURISTA;
+						puts("EL TIPO DE PASAJERO SE HA MODIFICADO.");
 					break;
 
 					case 2:
-						auxiliar.typePassenger = EJECUTIVO;
-						puts("\nEL TIPO DE PASAJERO SE HA MODIFICADO.");
+						Pasajero.typePassenger = EJECUTIVO;
+						puts("EL TIPO DE PASAJERO SE HA MODIFICADO.");
 					break;
 
 					case 3:
-						auxiliar.typePassenger = PREMIUM;
-						puts("\nEL TIPO DE PASAJERO SE HA MODIFICADO.");
+						Pasajero.typePassenger = PREMIUM;
+						puts("EL TIPO DE PASAJERO SE HA MODIFICADO.");
 					break;
 				}
 			break;
 
 			case 5:
 				utn_getNumero("INGRESE EL NUEVO ESTADO DE VUELO (OPCION 1: ACTIVO | OPCION 2: INACTIVO): ",
-											"ERROR \n", 0, 10, 2, &opcionEstadoVuelo);
+							  "ERROR. ", 0, 10, 2, &opcionEstadoVuelo);
 				switch(opcionEstadoVuelo)
 				{
 					case 1:
-						auxiliar.statusFlight = ACTIVO;
-						puts("\nEL ESTADO DEL PASAJERO SE HA MODIFICADO.");
+						Pasajero.statusFlight = ACTIVO;
+						puts("EL ESTADO DEL PASAJERO SE HA MODIFICADO.");
 					break;
 
 					case 2:
-						auxiliar.statusFlight = CANCELADO;
-						puts("\nEL ESTADO DEL PASAJERO SE HA MODIFICADO.");
+						Pasajero.statusFlight = CANCELADO;
+						puts("EL ESTADO DEL PASAJERO SE HA MODIFICADO.");
 					break;
 				}
 			break;
 
 			case 6:
-				if(utn_getNumFloat("INGRESE EL NUEVO PRECIO: ", "ERROR \n", 0, 999999, 2, &auxiliar.price) == 0)
+				if(utn_getNumFloat("INGRESE EL NUEVO PRECIO: ", "ERROR. ", 0, 999999, 2, &Pasajero.price) == 0)
 				{
-					puts("\nEL PRECIO SE HA MODIFICADO.");
+					puts("EL PRECIO SE HA MODIFICADO.");
 				}
 			break;
 
 			case 7:
-				puts("\nVOLVIENDO AL MENU PRINCIPAL...");
+				puts("\nDATOS MODIFICADOS CORRECTAMENTE, VOLVIENDO AL MENU PRINCIPAL...");
 			break;
 		}
 	}while(opcionMenuModificar != 7);
 
-	auxiliar = Pasajero;
-
-	return auxiliar;
+	return Pasajero;
 }
 
 /// @fn void sPass_printOne(sPassengers, int)
@@ -297,21 +246,15 @@ sPassengers sPass_modifyOne(sPassengers Pasajero)
 /// muestra
 /// @param Pasajero
 /// @param criterio
-void sPass_printOne(sPassengers Pasajero, int criterio)
+static void sPass_printOne(sPassengers Pasajero, int criterio)
 {
 	char estadoVuelo[TAM_CHAR];
 	char tipoPasajero[TAM_CHAR];
 
 	switch(criterio)
 	{
-
 		case 1:
-			//CABECERA
-			puts("\n+-------------------------------------------------------+");
-			puts("|     APELLIDO   |     NOMBRE     | ID |       TIPO     |");
-			puts("+-------------------------------------------------------+");
-
-			printf("|%-16s|%-16s|%4d|", Pasajero.lastname, Pasajero.name, Pasajero.id);
+			printf("|%4d|%-15s|%-16s|%-12.2f|", Pasajero.id, Pasajero.lastname, Pasajero.name, Pasajero.price);
 
 			switch(Pasajero.typePassenger)
 			{
@@ -335,19 +278,175 @@ void sPass_printOne(sPassengers Pasajero, int criterio)
 		case 2:
 			if(Pasajero.statusFlight == ACTIVO)
 			{
-				puts("\n+------------------------------------------------------------------------+");
-				puts("|     APELLIDO   |     NOMBRE     | ID |  CODIGO VUELO  |     ESTADO     |");
-				puts("+------------------------------------------------------------------------+");
 
-				printf("|%-16s|%-16s|%4d|%-16s|", Pasajero.lastname, Pasajero.name, Pasajero.id, Pasajero.flycode);
+				printf("|%4d|%-15s|%-16s|%-12.2f|%-16s|", Pasajero.id, Pasajero.lastname, Pasajero.name, Pasajero.price,Pasajero.flycode);
 				strncpy(estadoVuelo, "ACTIVO", sizeof(estadoVuelo));
 				printf("%-16s|\n", estadoVuelo);
 			}
-			else
-			{
-				puts("\naNO SE CARGO NINGUN PASAJERO ACTIVO.");
-			}
 		break;
+	}
+}
+
+//-----------------------------------------------------ABM---------------------------------------------------------------
+
+/// @fn int sPass_addPassengers(sPassengers[], int)
+/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tama�o, luego busca un indice LIBRE en el array para
+/// poder dar de alta. Pide los datos del pasajero y le da un ID �nico a cada uno cambiandole su estado a OCUPADO
+/// @param array
+/// @param TAM
+/// @return Retorna 1 si se pudo dar de alta o -1 si hubo algun error
+int sPass_addPassengers(sPassengers array[], int TAM)
+{
+	int rtn = -1;
+	sPassengers auxPasajeros;
+
+	///BUSCO ESPACIO EN ARRAY
+	int index = sPass_getFreeIndex(array, TAM);
+
+	///SI INDEX == -1 ARRAY LLENO
+	///SI INDEX != -1 TENGO EN INDEX POSICION DE ARRAY LIBRE
+
+	if (index != -1)
+	{
+		///PIDO DATOS - CARGO Pasajeros AUXILIAR
+		auxPasajeros = sPass_enterData();
+
+		///SETEO ID UNICO - VARIABLE ESTATICA AUTOINCREMENTAL
+		auxPasajeros.id = sPass__getID();
+
+		///CAMBIO SU ESTADO A "OCUPADO"
+		auxPasajeros.isEmpty = OCUPADO;
+
+		///SETEO EL ARRAY CON AUXILIAR EN INDEX LIBRE OBTENIDO PREVIAMENTE
+		array[index] = auxPasajeros;
+
+		///RETORNO 1 PARA SABER QUE FUE DADO DE ALTA SATISFACTORIAMENTE
+		rtn = 1;
+	}
+
+	return rtn;
+}
+
+/// @fn int sPass_removePassengers(sPassengers[], int)
+/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tama�o, muestra un listado de
+/// pasajeros donde se encuentran todos los datos de cada uno, pide el ID a dar de baja y
+/// le cambia su estado a BAJA
+/// @param array
+/// @param TAM
+/// @return Retorna 1 si se pudo dar de baja o -1 si hubo algun error
+int sPass_removePassengers(sPassengers array[], int TAM)
+{
+	int rtn = 0;
+	int idPasajero;
+	int index;
+	int flag = 0;
+
+	///LISTO TODOS LOS Pasajeros
+	if(sPass_printPassengers(array, TAM,1))
+	{
+		///BANDERA EN 1 SI HAY Pasajeros DADOS DE ALTA PARA LISTAR
+		flag = 1;
+	}
+
+	///SI HAY Pasajeros PARA DAR DE BAJA
+	if(flag)
+	{
+		///PIDO ID A DAR DE BAJA
+		utn_getNumero("\nINGRESE ID DEL PASAJERO A DAR DE BAJA: ", "ERROR. ", 1000, 9999, 3, &idPasajero);
+
+		///BUSCO INDEX POR ID EN ARRAY
+		while (sPass_findPassengerByID(array, TAM, idPasajero) == -1)
+		{
+			puts("\nNO EXISTE ID.");
+
+			///PIDO OTRA VEZ ID A DAR DE BAJA
+			utn_getNumero("\nINGRESE ID DEL PASAJERO A DAR DE BAJA: ", "ERROR. ", 1000, 9999, 3, &idPasajero);
+		}
+
+		///OBTENGO INDEX DEL ARRAY DE Pasajeros A DAR DE BAJA
+		index = sPass_findPassengerByID(array, TAM, idPasajero);
+
+		///BAJA ACEPTADA - CAMBIO ESTADO A "BAJA"
+		array[index].isEmpty = BAJA;
+
+		puts("\nSE HA DADO DE BAJA EL PASAJERO. \n");
+
+		///RETORNO 1 SI SE DIO DE BAJA CORRECTAMENTE
+		rtn = 1;
+	}
+
+	return rtn;
+}
+
+/// @fn int sPass_modifyData(sPassengers[], int)
+/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tamaño, muestra un listado de
+/// pasajeros donde se encuentran todos los datos de cada uno, pide el ID a modificar y
+/// usa sPass_modifyOne para modificar el campo que el usuario elija en el menu mostrado
+/// @param array
+/// @param TAM
+/// @return @return Retorna 1 si se pudo modificar el campo requerido o -1 si hubo algun error
+int sPass_modifyData(sPassengers array[], int TAM)
+{
+	int rtn = 0;
+	int idPasajero;
+	int index;
+	int flag = 0;
+	sPassengers auxiliar;
+
+	///LISTO TODOS LOS Pasajeros
+	if(sPass_printPassengers(array, TAM,1))
+	{
+		///BANDERA EN 1 SI HAY Pasajeros DADOS DE ALTA PARA LISTAR
+		flag = 1;
+	}
+
+	///SI HAY Pasajeros PARA MODIFICAR
+	if(flag)
+	{
+		///PIDO ID A MODIFICAR
+		utn_getNumero("\nINGRESE ID DEL PASAJERO A MODIFICAR: ", "ERROR. ", 1000, 9999, 3, &idPasajero);
+
+		///BUSCO INDEX POR ID EN ARRAY
+		while(sPass_findPassengerByID(array, TAM, idPasajero) == -1)
+		{
+			puts("NO EXISTE ID.");
+			///PIDO ID A MODIFICAR
+			utn_getNumero("\nREINGRESE ID DEL PASAJERO A MODIFICAR: ", "ERROR. ", 1000, 9999, 3, &idPasajero);
+		}
+
+		///OBTENGO INDEX DEL ARRAY DE Pasajeros A MODIFICAR
+		index = sPass_findPassengerByID(array, TAM, idPasajero);
+
+		///LLAMO A FUNCION QUE MODIFICA Pasajeros
+		auxiliar = sPass_modifyOne(array[index]);
+
+		///MODIFICACION ACEPTADA
+		array[index] = auxiliar;
+
+		//RETORNO 1 SI SE MODIFICO CORRECTAMENTE
+		rtn = 1;
+	}
+
+	return rtn;
+}
+
+/// @fn void sPass_initPassenger(sPassengers[], int)
+/// @brief Recibe el array cuyo tipo de dato es sPassengers y su tamaño, para asi darle un indice LIBRE
+/// @param array
+/// @param TAM
+void sPass_initPassenger(sPassengers array[], int TAM)
+{
+	int i;
+
+	///SI EXISTE EL ARRAY Y EL LIMITE ES VALIDO
+	if (array != NULL && TAM > 0)
+	{
+		///RECORRE EL ARRAY
+		for (i = 0; i < TAM; i++)
+		{
+			///SETEA ESTADO DE "LIBRE"
+			array[i].isEmpty = LIBRE;
+		}
 	}
 }
 
@@ -404,6 +503,43 @@ int sPass_printPassengers(sPassengers Pasajeros[], int TAM, int criterio)
 	}
 
 	return rtn;
+}
+
+/// @fn void sPass_printAverage(sPassengers[], int)
+/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tama�o,
+///  su funcionalidad es unicamente mostrar el precio total acumulado
+/// entre todos los vuelos, calcula su promedio y cuenta cuantos
+///  pasajeros superan ese promedio
+/// @param array
+/// @param TAM
+void sPass_printAverage(sPassengers array[], int TAM)
+{
+	int i = 0;
+	float promedioPrecio;
+	int contadorPasajeros = 0;
+	float acumuladorPrecio = 0;
+	int contadorPasajerosMayorPrecio = 0;
+
+	if(array != NULL && TAM > 0) ///PREGUNTA SI EL ARRAY EL TAM FUERON PASADOS CORRECTAMENTE
+	{
+		for(i = 0; i < TAM; i++) ///RECORRO EL ARRAY
+		{
+			if(array[i].isEmpty == OCUPADO) ///PREGUNTA SI EL ARRAY EN LA POSICION I ESTA OCUPADO
+			{
+				acumuladorPrecio += array[i].price;
+				contadorPasajeros++;
+				promedioPrecio = acumuladorPrecio/contadorPasajeros;
+
+				if(array[i].price > promedioPrecio)
+				{
+					contadorPasajerosMayorPrecio++;
+				}
+			}
+		}
+		printf("\nPRECIO TOTAL RECAUDADO: %.2f",acumuladorPrecio);
+		printf("\nPROMEDIO PRECIO: %.2f",promedioPrecio);
+		printf("\nCANTIDAD DE PASAJEROS SUPERANDO EL PROMEDIO: %d",contadorPasajerosMayorPrecio);
+	}
 }
 
 /// @fn int sPass_sortPassengers(sPassengers[], int, int)
@@ -486,144 +622,115 @@ int sPass_sortPassengers(sPassengers array[], int TAM, int criterio)
 	return rtn;
 }
 
-//-----------------------------------------------------ABM--------------------------------------------------------------
-
-/// @fn int sPass_addPassengers(sPassengers[], int)
-/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tama�o, luego busca un indice LIBRE en el array para
-/// poder dar de alta. Pide los datos del pasajero y le da un ID �nico a cada uno cambiandole su estado a OCUPADO
-/// @param array
-/// @param TAM
-/// @return Retorna 1 si se pudo dar de alta o -1 si hubo algun error
-int sPass_addPassengers(sPassengers array[], int TAM)
+int sPass_CargaForzada(sPassengers listaPasajeros[])
 {
 	int rtn = -1;
-	sPassengers auxPasajeros;
 
-	///BUSCO ESPACIO EN ARRAY
-	int index = sPass_getFreeIndex(array, TAM);
-
-	///SI INDEX == -1 ARRAY LLENO
-	///SI INDEX != -1 TENGO EN INDEX POSICION DE ARRAY LIBRE
-
-	if (index != -1)
+	if(listaPasajeros != NULL)
 	{
-		///PIDO DATOS - CARGO Pasajeros AUXILIAR
-		auxPasajeros = sPass_enterData();
+		sPassengers pasajeroAuxiliar[10];
 
-		///SETEO ID UNICO - VARIABLE ESTATICA AUTOINCREMENTAL
-		auxPasajeros.id = sPass__getID();
+		pasajeroAuxiliar[0].id = 1000;
+		strcpy(pasajeroAuxiliar[0].name,"Jose");
+		strcpy(pasajeroAuxiliar[0].lastname,"Falcon");
+		pasajeroAuxiliar[0].price = 86000;
+		pasajeroAuxiliar[0].typePassenger = TURISTA;
+		strcpy(pasajeroAuxiliar[0].flycode,"PMQ897");
+		pasajeroAuxiliar[0].statusFlight = ACTIVO;
+		pasajeroAuxiliar[0].isEmpty = OCUPADO;
 
-		///CAMBIO SU ESTADO A "OCUPADO"
-		auxPasajeros.isEmpty = OCUPADO;
+		pasajeroAuxiliar[1].id = 1001;
+		strcpy(pasajeroAuxiliar[1].name,"Liliana");
+		strcpy(pasajeroAuxiliar[1].lastname,"Carreras");
+		pasajeroAuxiliar[1].price = 80000;
+		pasajeroAuxiliar[1].typePassenger = TURISTA;
+		strcpy(pasajeroAuxiliar[1].flycode,"BVA582");
+		pasajeroAuxiliar[1].statusFlight = ACTIVO;
+		pasajeroAuxiliar[1].isEmpty = OCUPADO;
 
-		///SETEO EL ARRAY CON AUXILIAR EN INDEX LIBRE OBTENIDO PREVIAMENTE
-		array[index] = auxPasajeros;
+		pasajeroAuxiliar[2].id = 1002;
+		strcpy(pasajeroAuxiliar[2].name,"Celeste");
+		strcpy(pasajeroAuxiliar[2].lastname,"Falcon");
+		pasajeroAuxiliar[2].price = 83000;
+		pasajeroAuxiliar[2].typePassenger = TURISTA;
+		strcpy(pasajeroAuxiliar[2].flycode,"HIJ719");
+		pasajeroAuxiliar[2].statusFlight = ACTIVO;
+		pasajeroAuxiliar[2].isEmpty = OCUPADO;
 
-		///RETORNO 1 PARA SABER QUE FUE DADO DE ALTA SATISFACTORIAMENTE
-		rtn = 1;
-	}
+		pasajeroAuxiliar[3].id = 1003;
+		strcpy(pasajeroAuxiliar[3].name,"Carla");
+		strcpy(pasajeroAuxiliar[3].lastname,"Falcon");
+		pasajeroAuxiliar[3].price = 85000;
+		pasajeroAuxiliar[3].typePassenger = TURISTA;
+		strcpy(pasajeroAuxiliar[3].flycode,"FRA263");
+		pasajeroAuxiliar[3].statusFlight = ACTIVO;
+		pasajeroAuxiliar[3].isEmpty = OCUPADO;
 
-	return rtn;
-}
+		pasajeroAuxiliar[4].id = 1004;
+		strcpy(pasajeroAuxiliar[4].name,"Horacio");
+		strcpy(pasajeroAuxiliar[4].lastname,"Romero");
+		pasajeroAuxiliar[4].price = 70000;
+		pasajeroAuxiliar[4].typePassenger = EJECUTIVO;
+		strcpy(pasajeroAuxiliar[4].flycode,"MRN375");
+		pasajeroAuxiliar[4].statusFlight = CANCELADO;
+		pasajeroAuxiliar[4].isEmpty = OCUPADO;
 
-/// @fn int sPass_removePassengers(sPassengers[], int)
-/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tama�o, muestra un listado de
-/// pasajeros donde se encuentran todos los datos de cada uno, pide el ID a dar de baja y
-/// le cambia su estado a BAJA
-/// @param array
-/// @param TAM
-/// @return Retorna 1 si se pudo dar de baja o -1 si hubo algun error
-int sPass_removePassengers(sPassengers array[], int TAM)
-{
-	int rtn = 0;
-	int idPasajero;
-	int index;
-	int flag = 0;
+		pasajeroAuxiliar[5].id = 1005;
+		strcpy(pasajeroAuxiliar[5].name,"Daniela");
+		strcpy(pasajeroAuxiliar[5].lastname,"Barrionuevo");
+		pasajeroAuxiliar[5].price = 50000;
+		pasajeroAuxiliar[5].typePassenger = EJECUTIVO;
+		strcpy(pasajeroAuxiliar[5].flycode,"ELN358");
+		pasajeroAuxiliar[5].statusFlight = CANCELADO;
+		pasajeroAuxiliar[5].isEmpty = OCUPADO;
 
-	///LISTO TODOS LOS Pasajeros
-	if(sPass_printPassengers(array, TAM,1))
-	{
-		///BANDERA EN 1 SI HAY Pasajeros DADOS DE ALTA PARA LISTAR
-		flag = 1;
-	}
+		pasajeroAuxiliar[6].id = 1006;
+		strcpy(pasajeroAuxiliar[6].name,"Marianela");
+		strcpy(pasajeroAuxiliar[6].lastname,"Romero");
+		pasajeroAuxiliar[6].price = 57000;
+		pasajeroAuxiliar[6].typePassenger = EJECUTIVO;
+		strcpy(pasajeroAuxiliar[6].flycode,"MTS076");
+		pasajeroAuxiliar[6].statusFlight = CANCELADO;
+		pasajeroAuxiliar[6].isEmpty = OCUPADO;
 
-	///SI HAY Pasajeros PARA DAR DE BAJA
-	if(flag)
-	{
-		///PIDO ID A DAR DE BAJA
-		utn_getNumero("\n\n\nINGRESE ID DEL PASAJERO A DAR DE BAJA: ", "ERROR. ", 1000, 9999, 3, &idPasajero);
+		pasajeroAuxiliar[7].id = 1007;
+		strcpy(pasajeroAuxiliar[7].name,"Francis");
+		strcpy(pasajeroAuxiliar[7].lastname,"Romero");
+		pasajeroAuxiliar[7].price = 60000;
+		pasajeroAuxiliar[7].typePassenger = PREMIUM;
+		strcpy(pasajeroAuxiliar[7].flycode,"CRL205");
+		pasajeroAuxiliar[7].statusFlight = ACTIVO;
+		pasajeroAuxiliar[7].isEmpty = OCUPADO;
 
-		///BUSCO INDEX POR ID EN ARRAY
-		while (sPass_findPassengerByID(array, TAM, idPasajero) == -1)
-		{
-			puts("\nNO EXISTE ID.");
+		pasajeroAuxiliar[8].id = 1008;
+		strcpy(pasajeroAuxiliar[8].name,"Exequiel");
+		strcpy(pasajeroAuxiliar[8].lastname,"Capelleti");
+		pasajeroAuxiliar[8].price = 97000;
+		pasajeroAuxiliar[8].typePassenger = PREMIUM;
+		strcpy(pasajeroAuxiliar[8].flycode,"RCO246");
+		pasajeroAuxiliar[8].statusFlight = ACTIVO;
+		pasajeroAuxiliar[8].isEmpty = OCUPADO;
 
-			///PIDO OTRA VEZ ID A DAR DE BAJA
-			utn_getNumero("\n\n\nINGRESE ID DEL PASAJERO A DAR DE BAJA: ", "ERROR. ", 1000, 9999, 3, &idPasajero);
-		}
+		pasajeroAuxiliar[9].id = 1009;
+		strcpy(pasajeroAuxiliar[9].name,"Fidel");
+		strcpy(pasajeroAuxiliar[9].lastname,"Jofre");
+		pasajeroAuxiliar[9].price = 79000;
+		pasajeroAuxiliar[9].typePassenger = PREMIUM;
+		strcpy(pasajeroAuxiliar[9].flycode,"AGS192");
+		pasajeroAuxiliar[9].statusFlight = ACTIVO;
+		pasajeroAuxiliar[9].isEmpty = OCUPADO;
 
-		///OBTENGO INDEX DEL ARRAY DE Pasajeros A DAR DE BAJA
-		index = sPass_findPassengerByID(array, TAM, idPasajero);
+		listaPasajeros[10] = pasajeroAuxiliar[0];
+		listaPasajeros[11] = pasajeroAuxiliar[1];
+		listaPasajeros[12] = pasajeroAuxiliar[2];
+		listaPasajeros[13] = pasajeroAuxiliar[3];
+		listaPasajeros[14] = pasajeroAuxiliar[4];
+		listaPasajeros[15] = pasajeroAuxiliar[5];
+		listaPasajeros[16] = pasajeroAuxiliar[6];
+		listaPasajeros[17] = pasajeroAuxiliar[7];
+		listaPasajeros[18] = pasajeroAuxiliar[8];
+		listaPasajeros[19] = pasajeroAuxiliar[9];
 
-		///BAJA ACEPTADA - CAMBIO ESTADO A "BAJA"
-		array[index].isEmpty = BAJA;
-
-		puts("\nSE HA DADO DE BAJA EL PASAJERO. \n");
-
-		///RETORNO 1 SI SE DIO DE BAJA CORRECTAMENTE
-		rtn = 1;
-	}
-
-	return rtn;
-}
-
-/// @fn int sPass_modifyData(sPassengers[], int)
-/// @brief Recibe el array cuyo tipo de dato es sPassenger y su tama�o, muestra un listado de
-/// pasajeros donde se encuentran todos los datos de cada uno, pide el ID a modificar y
-/// usa sPass_modifyOne para modificar el campo que el usuario elija en el menu mostrado
-/// @param array
-/// @param TAM
-/// @return @return Retorna 1 si se pudo modificar el campo requerido o -1 si hubo algun error
-int sPass_modifyData(sPassengers array[], int TAM)
-{
-	int rtn = 0;
-	int idPasajero;
-	int index;
-	int flag = 0;
-	sPassengers auxiliar;
-
-	///LISTO TODOS LOS Pasajeros
-	if(sPass_printPassengers(array, TAM,1))
-	{
-		///BANDERA EN 1 SI HAY Pasajeros DADOS DE ALTA PARA LISTAR
-		flag = 1;
-	}
-
-	///SI HAY Pasajeros PARA MODIFICAR
-	if(flag)
-	{
-		///PIDO ID A MODIFICAR
-		utn_getNumero("\n\nINGRESE ID DEL PASAJERO A MODIFICAR: ", "ERROR \n", 1000, 9999, 3, &idPasajero);
-
-		///BUSCO INDEX POR ID EN ARRAY
-		while (sPass_findPassengerByID(array, TAM, idPasajero) == -1)
-		{
-			puts("NO EXISTE ID.");
-
-			///PIDO ID A MODIFICAR
-			utn_getNumero("\n\nINGRESE ID DEL PASAJERO A MODIFICAR: ", "ERROR \n", 1000, 9999, 3, &idPasajero);
-		}
-
-		///OBTENGO INDEX DEL ARRAY DE Pasajeros A MODIFICAR
-		index = sPass_findPassengerByID(array, TAM, idPasajero);
-
-		///LLAMO A FUNCION QUE MODIFICA Pasajeros
-		auxiliar = sPass_modifyOne(array[index]);
-
-		///MODIFICACION ACEPTADA
-		array[index] = auxiliar;
-
-		//RETORNO 1 SI SE MODIFICO CORRECTAMENTE
 		rtn = 1;
 	}
 

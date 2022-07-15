@@ -1,8 +1,20 @@
 #include "input.h"
 
-//-----------------------------------------------TODAS USAN myGets------------------------------------------------------
+//-----------------------------------------------STATICS HEADERS--------------------------------------------------------
 
-int myGets(char* cadena, int longitud)
+static int myGets(char* cadena, int longitud);
+static int esNumerica(char* cadena, int limite);
+static int getInt(int* pResultado);
+static int esNumericaFloat(char* cadena, int limite);
+static int getFloat(float* pNumeroTomado);
+static int getString(char* pResultado, int longitud);
+static int esString(char* cadena, int longitud);
+static int getStringAlfaNum(char* pResultado, int longitud);
+static int esAlfanumerico(char cadena[], int len);
+
+//-----------------------------------------------FUNCIONES ESTATICAS----------------------------------------------------
+
+static int myGets(char* cadena, int longitud)
 {
 	int retorno = -1;
 	char bufferString[4096];
@@ -26,7 +38,170 @@ int myGets(char* cadena, int longitud)
 	return retorno;
 }
 
-//-----------------------------------------------GET NUMERO INT---------------------------------------------------------
+static int esNumerica(char* cadena, int limite)
+{
+	int retorno = -1;
+	int i;
+
+	if(cadena != NULL && limite > 0)
+	{
+		retorno = 1; //VERDADERO
+		for(i = 0; i<limite && cadena[i] != '\0'; i++)
+		{
+			if(i == 0 && (cadena[i] == '+' || cadena[i] == '-'))
+			{
+				continue;
+			}
+			if(cadena[i] > '9' || cadena[i] < '0')
+			{
+				retorno = 0;
+				break;
+			}
+		}
+	}
+	return retorno;
+}
+
+static int getInt(int* pResultado)
+{
+	int retorno = -1;
+	char buffer[4096];
+
+	if(	pResultado != NULL &&
+		myGets(buffer, sizeof(buffer)) == 0 &&
+		esNumerica(buffer,sizeof(buffer)) )
+		{
+			*pResultado = atoi(buffer);
+			retorno = 0;
+		}
+	return retorno;
+}
+
+static int esNumericaFloat(char* cadena, int limite)
+{
+	int i = 0;
+	int retorno = -1;
+	int contadorPuntos = 0;
+
+	if(cadena != NULL && limite > 0)
+	{
+		while(cadena[i] != '\0')
+		{
+			if(cadena[i] == '.' && contadorPuntos == 0)
+			{
+				contadorPuntos++;
+				i++;
+				continue;
+			}
+
+			if(cadena[i] > '9' || cadena[i] < '0')
+			{
+				retorno = 0;
+				break;
+			}
+			i++;
+		}
+	}
+	return retorno;
+}
+
+static int getFloat(float* pNumeroTomado)
+{
+	int retorno = -1;
+	char numeroAuxiliar[200];
+
+	if( myGets(numeroAuxiliar, sizeof(numeroAuxiliar)) == 0
+			&& esNumericaFloat(numeroAuxiliar, sizeof(numeroAuxiliar)) )
+	{
+		*pNumeroTomado = atof(numeroAuxiliar);
+		retorno = 0;
+	}
+
+	return retorno;
+}
+
+static int getString(char* pResultado, int longitud)
+{
+    int retorno = -1;
+    char buffer[4096];
+
+	if(pResultado != NULL)
+	{
+		if(	myGets(buffer,sizeof(buffer)) == 0 &&
+			esString(buffer, sizeof(buffer)) &&
+			strnlen(buffer,sizeof(buffer)) < longitud )
+		{
+			strncpy(pResultado,buffer,longitud);
+			retorno = 0;
+		}
+	}
+
+    return retorno;
+}
+
+static int esString(char* cadena, int longitud)
+{
+	int i = 0;
+	int retorno = 1;
+
+	if(cadena != NULL && longitud > 0)
+	{
+		for(i = 0 ; cadena[i] != '\0' && i < longitud; i++)
+		{
+			if( (cadena[i] < 'A' || cadena[i] > 'Z') &&
+				(cadena[i] < 'a' || cadena[i] > 'z') )
+			{
+				retorno = 0;
+				break;
+			}
+		}
+	}
+
+	return retorno;
+}
+
+static int getStringAlfaNum(char* pResultado, int longitud)
+{
+    int retorno = -1;
+    char buffer[4096];
+
+	if(pResultado != NULL)
+	{
+		if(	myGets(buffer,sizeof(buffer)) == 0 &&
+			esAlfanumerico(buffer, sizeof(buffer)) &&
+			strnlen(buffer,sizeof(buffer)) < longitud )
+		{
+			strncpy(pResultado,buffer,longitud);
+			retorno = 0;
+		}
+	}
+
+    return retorno;
+}
+
+static int esAlfanumerico(char cadena[], int len)
+{
+	int i = 0;
+	int retorno = 1;
+
+	if(cadena != NULL && len > 0)
+	{
+		for(i = 0 ; cadena[i] != '\0' && i < len; i++)
+		{
+			if( (cadena[i] < 'A' || cadena[i] > 'Z') &&
+				(cadena[i] < 'a' || cadena[i] > 'z') &&
+				(cadena[i] < '0' || cadena[i] > '9') )
+			{
+				retorno = 0;
+				break;
+			}
+		}
+	}
+
+	return retorno;
+}
+
+//-----------------------------------------------INPUTS UTN-------------------------------------------------------------
 
 int utn_getNumero(char* mensaje, char* mensajeError, int minimo, int maximo, int reintentos, int* pResultado)
 {
@@ -53,47 +228,6 @@ int utn_getNumero(char* mensaje, char* mensajeError, int minimo, int maximo, int
 
 	return retorno;
 }
-
-int esNumerica(char* cadena, int limite)
-{
-	int retorno = -1;
-	int i;
-
-	if(cadena != NULL && limite > 0)
-	{
-		retorno = 1; //VERDADERO
-		for(i = 0; i<limite && cadena[i] != '\0'; i++)
-		{
-			if(i == 0 && (cadena[i] == '+' || cadena[i] == '-'))
-			{
-				continue;
-			}
-			if(cadena[i] > '9' || cadena[i] < '0')
-			{
-				retorno = 0;
-				break;
-			}
-		}
-	}
-	return retorno;
-}
-
-int getInt(int* pResultado)
-{
-	int retorno = -1;
-	char buffer[4096];
-
-	if(	pResultado != NULL &&
-		myGets(buffer, sizeof(buffer)) == 0 &&
-		esNumerica(buffer,sizeof(buffer)) )
-		{
-			*pResultado = atoi(buffer);
-			retorno = 0;
-		}
-	return retorno;
-}
-
-//-----------------------------------------------GET NUMERO FLOAT-------------------------------------------------------
 
 int utn_getNumFloat(char mensaje[], char mensajeError[], int minimo, int maximo, int reintentos, float *pNumeroIngresado)
 {
@@ -124,51 +258,6 @@ int utn_getNumFloat(char mensaje[], char mensajeError[], int minimo, int maximo,
 	return retorno;
 }
 
-int esNumericaFloat(char* cadena, int limite)
-{
-	int i = 0;
-	int retorno = -1;
-	int contadorPuntos = 0;
-
-	if(cadena != NULL && limite > 0)
-	{
-		while(cadena[i] != '\0')
-		{
-			if(cadena[i] == '.' && contadorPuntos == 0)
-			{
-				contadorPuntos++;
-				i++;
-				continue;
-			}
-
-			if(cadena[i] > '9' || cadena[i] < '0')
-			{
-				retorno = 0;
-				break;
-			}
-			i++;
-		}
-	}
-	return retorno;
-}
-
-int getFloat(float* pNumeroTomado)
-{
-	int retorno = -1;
-	char numeroAuxiliar[200];
-
-	if( myGets(numeroAuxiliar, sizeof(numeroAuxiliar)) == 0
-			&& esNumericaFloat(numeroAuxiliar, sizeof(numeroAuxiliar)) )
-	{
-		*pNumeroTomado = atof(numeroAuxiliar);
-		retorno = 0;
-	}
-
-	return retorno;
-}
-
-//-----------------------------------------------GET STRING-------------------------------------------------------------
-
 int utn_getString(char* mensaje, char* mensajeError, int reintentos,  int longitud, char* pResultado)
 {
 	char bufferString[4096];
@@ -193,95 +282,26 @@ int utn_getString(char* mensaje, char* mensajeError, int reintentos,  int longit
 	return retorno;
 }
 
-int getString(char* pResultado, int longitud)
+int utn_getAlfaNum(char mensaje[], char mensajeError[], int reintentos, int TAM, char cadena[])
 {
-    int retorno = -1;
-    char buffer[4096];
+	char bufferString[4096];
+	int retorno = -1;
 
-	if(pResultado != NULL)
+	while(reintentos >= 0)
 	{
-		if(	myGets(buffer,sizeof(buffer)) == 0 &&
-			esString(buffer, sizeof(buffer)) &&
-			strnlen(buffer,sizeof(buffer)) < longitud )
+		reintentos--;
+		printf("%s",mensaje);
+
+		if(getStringAlfaNum(bufferString, sizeof(bufferString)) == 0 &&
+				strnlen(bufferString, sizeof(bufferString)) < TAM)
 		{
-			strncpy(pResultado,buffer,longitud);
+			strncpy(cadena,bufferString,TAM);
 			retorno = 0;
+			break;
 		}
-	}
 
-    return retorno;
-}
-
-int esString(char* cadena, int longitud)
-{
-	int i = 0;
-	int retorno = 1;
-
-	if(cadena != NULL && longitud > 0)
-	{
-		for(i = 0 ; cadena[i] != '\0' && i < longitud; i++)
-		{
-			if( (cadena[i] < 'A' || cadena[i] > 'Z') &&
-				(cadena[i] < 'a' || cadena[i] > 'z') )
-			{
-				retorno = 0;
-				break;
-			}
-		}
+		printf("%s",mensajeError);
 	}
 
 	return retorno;
 }
-
-int utn_getAlfaNum(char mensaje[], char mensajeError[], int reintentos, int TAM, char cadena[])
-{
-	int rtn = -1;
-	char buffer[TAM];
-	int rtnString;
-
-	if(mensaje != NULL && mensajeError != NULL && cadena != NULL && TAM > 0)
-	{
-		printf("%s", mensaje);
-		fflush(stdin);
-		rtnString = myGets(buffer, sizeof(buffer));
-		do
-		{
-			if(rtnString == 0 && strlen(buffer) <= TAM && esAlfanumerico(buffer, sizeof(buffer)) == 0)
-			{
-				strncpy(cadena, buffer, TAM);
-				rtn = 0;
-				break;
-			}
-
-			printf("%s", mensajeError);
-			fflush(stdin);
-			rtnString = myGets(buffer, sizeof(buffer));
-			reintentos--;
-
-		}while(reintentos >= 0);
-	}
-	return rtn;
-}
-
-int esAlfanumerico(char cadena[], int len)
-{
-	int rtn = -1;
-	int i = 0;
-
-	if(cadena != NULL && len > 0)
-	{
-		while(cadena[i] != '\0')
-		{
-			if( (cadena[i] < 'a' || cadena[i] > 'z') &&
-			    (cadena[i] < 'A' || cadena[i] > 'Z') &&
-			    (cadena[i] < '0' || cadena[i] > '9') )
-			{
-				rtn = 0;
-				break;
-			}
-			i++;
-		}
-	}
-	return rtn;
-}
-

@@ -30,20 +30,14 @@ typedef struct
 	int isEmpty;
 } sPassengers;
 
-//PROTOTIPOS FUNCIONES UTILES EN ABM
-void sPass_initPassenger(sPassengers array[], int TAM);
-int sPass_getFreeIndex(sPassengers array[], int TAM);
-int sPass_findPassengerByID(sPassengers array[], int TAM, int ID);
-sPassengers sPass_enterData(void);
-sPassengers sPass_modifyOne(sPassengers Pasajeros);
-void sPass_printOne(sPassengers Pasajero, int criterio);
-int sPass_printPassengers(sPassengers Pasajeros[], int TAM, int criterio);
-void sPass_printAverage(sPassengers array[], int TAM);
-int sPass_sortPassengers(sPassengers array[], int TAM, int criterio);
-
-//PROTOTIPOS FUNCIONES ABM
+//PROTOTIPOS ABM
 int sPass_addPassengers(sPassengers array[], int TAM);
 int sPass_removePassengers(sPassengers array[], int TAM);
 int sPass_modifyData(sPassengers array[], int TAM);
+void sPass_initPassenger(sPassengers array[], int TAM);
+int sPass_printPassengers(sPassengers Pasajeros[], int TAM, int criterio);
+void sPass_printAverage(sPassengers array[], int TAM);
+int sPass_sortPassengers(sPassengers array[], int TAM, int criterio);
+int sPass_CargaForzada(sPassengers listaPasajeros[]);
 
 #endif /* ABM_H_ */
