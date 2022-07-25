@@ -3,6 +3,7 @@
 #include "LinkedList.h"
 #include "Passenger.h"
 #include "Parser.h"
+#include "Controller.h"
 
 /** \brief Carga los datos de los pasajeros desde el archivo data.csv (modo texto).
  *
@@ -116,6 +117,8 @@ int controller_editPassenger(LinkedList* pArrayListPassenger)
 
 	if(pArrayListPassenger != NULL)
 	{
+		controller_ListPassenger(pArrayListPassenger);
+
 		if(utn_getNumero("\nINGRESE EL ID DEL PASAJERO A MOFIDIFICAR: ", "\nERROR.", 0, 10000, 2, &idAbuscar) == 0)
 		{
 
@@ -234,6 +237,8 @@ int controller_removePassenger(LinkedList* pArrayListPassenger)
 
 	if(pArrayListPassenger != NULL)
 	{
+		controller_ListPassenger(pArrayListPassenger);
+
 		if(utn_getNumero("\nINGRESE EL ID DEL PASAJERO A DAR DE BAJA: ", "\nERROR.", 0, 10000, 2, &idAbuscar) == 0)
 		{
 			for(i = 0; i < ll_len(pArrayListPassenger); i++)

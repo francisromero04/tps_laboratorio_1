@@ -275,5 +275,3 @@ int ordenarCaracteres(char* cadena)
 
 	return rtn;
 }
-
-
